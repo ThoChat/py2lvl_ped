@@ -1,6 +1,6 @@
 # py2lvl_ped
 
-Python implementation of a **two-level pedestrian model with social forces** (IPP — Incremental Pedestrian Protocol), built as a custom operational model for the [Jupedsim](https://github.com/DLR-RM/jupedsim) framework.
+Python implementation of a **two-level pedestrian model with social forces**, built as a custom operational model for the [Jupedsim](https://github.com/DLR-RM/jupedsim) framework.
 
 Instead of a single position per agent, each pedestrian is modelled as a two-part system:
 

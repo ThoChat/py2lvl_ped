@@ -33,15 +33,11 @@ class TwoLevelPedestrianModelState:
 
 class TwoLevelPedestrianModel(CustomOperationalModel):
     """
-    Two-Level Pedestrian Model with Social Forces (IPP — Incremental
-    Pedestrian Protocol).
+    Two-Level Pedestrian Model with Social Forces.
 
     Each agent has an upper body and a ground support. The model combines
     Helbing-style social repulsion with contact forces at two levels and a
     locomotion/recovery coupling via the unit vector e_gs_ub.
-
-    Parameters follow the C++ reference
-    ``SocialForceModelIPP`` in ``2lvl_ped_original_cpp_code.hpp``.
     """
 
     def __init__(self):

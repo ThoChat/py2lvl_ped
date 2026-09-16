@@ -16,8 +16,15 @@ from py2lvl_ped_and_social_force import (
 
 ## Setup geometries
 room = Polygon([(-5, -5), (5, -5), (5, 5), (-5, 5)])
-inner = Point(0, 0).buffer(0.99, resolution=128)
-outer = Point(0, 0).buffer(1.00, resolution=128)
+
+
+def regular_polygon(radius, n, angle_offset=0.0):
+    angles = [2.0 * math.pi * i / n + angle_offset for i in range(n)]
+    return Polygon([(radius * math.cos(a), radius * math.sin(a)) for a in angles])
+
+
+inner = regular_polygon(0.99, 8)
+outer = regular_polygon(1.00, 8)
 ring = outer.difference(inner)
 
 
@@ -36,17 +43,28 @@ def radial_slot(center_angle, width, r_in=0.98, r_out=1.02):
     )
 
 
-# hollow pillar: 1 cm wall ring with 16 narrow radial gaps (connected walkable area)
-num_gaps = 4
-gap_width = 0.1
+# octagonal pillar: 1 cm wall ring with 8 narrow radial gaps at the corner
+# angles, leaving 8 trapezoidal walls (connected walkable area)
+num_gaps = 8
+# Must be wide enough for the *upper body* circle to thread through: its
+# contact force holds the body center ~radius/2 from a wall, so the gap has to
+# exceed roughly 2 * radius (0.6 m) or agents jam at the gap mouths.
+# (The ground-support circle is only 0.26 m across and passes easily.)
+gap_width = 0.6
+# r_in=0.97: the octagon edges recede from the vertices, so the slot's inner
+# end must stay inside the hole even at the slot's outermost angle, otherwise
+# each cut leaves a small notch on the wall ends
 slots = unary_union(
-    [radial_slot(2.0 * math.pi * i / num_gaps, gap_width) for i in range(num_gaps)]
+    [
+        radial_slot(2.0 * math.pi * i / num_gaps, gap_width, r_in=0.97)
+        for i in range(num_gaps)
+    ]
 )
 pillar = ring.difference(slots)
 area = room.difference(pillar)
 
 ## Setup spawning area
-num_agents = 10
+num_agents = 50
 spawning_area = room.difference(outer)
 pos_in_spawning_area = jps.distributions.distribute_by_number(
     polygon=spawning_area,

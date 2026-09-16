@@ -6,7 +6,7 @@ import numpy as np
 from jupedsim.agent_view import WallView
 from jupedsim.models.custom_model import CustomOperationalModel
 
-UNBALANCING_RATE = 0.1
+UNBALANCING_RATE = 1.0
 DAMPING_RATE = 0.5
 BALANCING_RATE = 0.5
 GS_SCALING_FACTOR = 0.26 / (2 * 0.3 * 1.65)

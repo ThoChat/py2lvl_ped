@@ -79,7 +79,7 @@ Per-agent state (`TwoLevelPedestrianModelState`):
 | `height` | 1.65 | Upper-body centre height [m] |
 | `body_force`, `friction` | 120000, 240000 | Defined for reference; tangential friction is not active in the current implementation |
 
-Global constants: `UNBALANCING_RATE = 0.1`, `DAMPING_RATE = 0.5`, `BALANCING_RATE = 0.5`, `GS_SCALING_FACTOR = 0.26 / (2 · 0.3 · 1.65)`.
+Global model parameters (keyword arguments of `TwoLevelPedestrianModel`, settable at simulation creation): `unbalancing_rate = 1.0`, `damping_rate = 0.5`, `balancing_rate = 0.5`, `gs_scaling_factor = 0.26 / (2 · 0.3 · 1.65)`.
 
 `check_model_constraint` rejects non-positive mass/speed/reaction time/radius, agents closer than their radius to a neighbour, and agents within `radius / 2` of a wall.
 

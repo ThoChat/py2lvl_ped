@@ -183,12 +183,11 @@ for pos, v0 in zip(pos_in_spawning_area, v_distribution):
 # Global model params:
 # body_force              120000    contact stiffness (k) [kg s^-2]
 # friction                240000    friction coefficient (kappa) [kg m^-1 s^-1]
-# Compile-time constants:
-# UNBALANCING_RATE        1.0       velocity control during locomotion
-# DAMPING_RATE            0.5       dissipation during locomotion
-# BALANCING_RATE          0.5       velocity control during recovery
-# GS_SCALING_FACTOR       0.26/(2*0.3*1.65) ground support circle radius
-# LEG_SCALING_FACTOR      0.5242    leg length [m]
+# Model constructor params (TwoLevelPedestrianModel(...)):
+# unbalancing_rate        1.0       velocity control during locomotion
+# damping_rate            0.5       dissipation during locomotion
+# balancing_rate          0.5       velocity control during recovery
+# gs_scaling_factor       0.26/(2*0.3*1.65) ground support circle radius
 
 ## run simulation
 max_iteration = 8000

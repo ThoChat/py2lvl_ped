@@ -6,10 +6,6 @@ import numpy as np
 from jupedsim.agent_view import WallView
 from jupedsim.models.custom_model import CustomOperationalModel
 
-UNBALANCING_RATE = 1.0
-DAMPING_RATE = 0.5
-BALANCING_RATE = 0.5
-GS_SCALING_FACTOR = 0.26 / (2 * 0.3 * 1.65)
 # G = 9.80665
 
 
@@ -38,10 +34,26 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
     Each agent has an upper body and a ground support. The model combines
     Helbing-style social repulsion with contact forces at two levels and a
     locomotion/recovery coupling via the unit vector e_gs_ub.
+
+    :param unbalancing_rate: velocity control during locomotion
+    :param damping_rate: dissipation during locomotion
+    :param balancing_rate: velocity control during recovery
+    :param gs_scaling_factor: ground support circle radius scaling factor
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        unbalancing_rate: float = 1.0,
+        damping_rate: float = 0.5,
+        balancing_rate: float = 0.5,
+        gs_scaling_factor: float = 0.26 / (2 * 0.3 * 1.65),
+    ):
         CustomOperationalModel.__init__(self)
+        self.unbalancing_rate = unbalancing_rate
+        self.damping_rate = damping_rate
+        self.balancing_rate = balancing_rate
+        self.gs_scaling_factor = gs_scaling_factor
 
     @staticmethod
     def _normalize(vector: tuple[float, float]) -> tuple[float, float]:
@@ -148,10 +160,11 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
             agent_pos, neighbor_pos, min_dist, velocity_diff
         )
 
-    @staticmethod
-    def _agent_ground_support_contact_force(state, neighbor) -> tuple[float, float]:
-        gs_radius1 = state.radius * GS_SCALING_FACTOR * state.height
-        gs_radius2 = neighbor.state.radius * GS_SCALING_FACTOR * neighbor.state.height
+    def _agent_ground_support_contact_force(self, state, neighbor) -> tuple[float, float]:
+        gs_radius1 = state.radius * self.gs_scaling_factor * state.height
+        gs_radius2 = (
+            neighbor.state.radius * self.gs_scaling_factor * neighbor.state.height
+        )
         min_dist = gs_radius1 + gs_radius2
         velocity_diff = (
             neighbor.state.ground_support_velocity[0]
@@ -175,9 +188,8 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
             (0.0, 0.0), wall.closest_point, state.radius, state.velocity
         )
 
-    @staticmethod
     def _obstacle_ground_support_contact_force(
-        state, wall: WallView
+        self, state, wall: WallView
     ) -> tuple[float, float]:
         # Walls are expressed relative to the upper body (agent at origin). The ground
         # support lives elsewhere, so compute its own closest point on the wall segment
@@ -185,7 +197,7 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
         ub = state.upper_body_position
         gs = state.ground_support_position
         gs_rel = (gs[0] - ub[0], gs[1] - ub[1])
-        gs_radius = state.radius * GS_SCALING_FACTOR * state.height
+        gs_radius = state.radius * self.gs_scaling_factor * state.height
         closest = wall.segment.closest_point(gs_rel)
         return TwoLevelPedestrianModel._contact_force_between_points(
             gs_rel,
@@ -261,16 +273,16 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
             + (
                 social_forces[0]
                 + upper_body_contact[0]
-                + (e_gs_ub[0] * 1.0 - state.velocity[0]) * UNBALANCING_RATE
-                - state.velocity[0] * DAMPING_RATE
+                + (e_gs_ub[0] * 1.0 - state.velocity[0]) * self.unbalancing_rate
+                - state.velocity[0] * self.damping_rate
             )
             * dt,
             state.velocity[1]
             + (
                 social_forces[1]
                 + upper_body_contact[1]
-                + (e_gs_ub[1] * 1.0 - state.velocity[1]) * UNBALANCING_RATE
-                - state.velocity[1] * DAMPING_RATE
+                + (e_gs_ub[1] * 1.0 - state.velocity[1]) * self.unbalancing_rate
+                - state.velocity[1] * self.damping_rate
             )
             * dt,
         )
@@ -280,13 +292,15 @@ class TwoLevelPedestrianModel(CustomOperationalModel):
             state.ground_support_velocity[0]
             + (
                 ground_support_contact[0]
-                + (e_gs_ub[0] * 1.0 - state.ground_support_velocity[0]) * BALANCING_RATE
+                + (e_gs_ub[0] * 1.0 - state.ground_support_velocity[0])
+                * self.balancing_rate
             )
             * dt,
             state.ground_support_velocity[1]
             + (
                 ground_support_contact[1]
-                + (e_gs_ub[1] * 1.0 - state.ground_support_velocity[1]) * BALANCING_RATE
+                + (e_gs_ub[1] * 1.0 - state.ground_support_velocity[1])
+                * self.balancing_rate
             )
             * dt,
         )
